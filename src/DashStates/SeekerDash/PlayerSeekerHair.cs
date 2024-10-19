@@ -139,7 +139,7 @@ public class PlayerSeekerHair : Component
 
         foreach (Braid braid in braids)
         {
-            braid.Scale = scale;
+            braid.Scale = scale.Sign();
             braid.Simulate(hairPosition, motion);
         }
     }
