@@ -132,14 +132,14 @@ public class PlayerSeekerHair : Component
     {
         Player player = Entity as Player;
         PlayerSprite sprite = player.Sprite;
-        Vector2 scale = new((float) player.Facing, (GravityHelper.IsPlayerInverted() ? -1 : 1) * sprite.Scale.Y); // GravityHelper only flips the PlayerSprite Y scale while it is being rendered, so we flip it manually here
+        Vector2 scale = new((float) player.Facing, GravityHelper.IsPlayerInverted() ? -1 : 1); // GravityHelper only flips the PlayerSprite Y scale while the PlayerSprite is being rendered, so we flip it manually here
 
         Vector2 hairOffset = sprite.HairOffset * scale;
-        Vector2 hairPosition = sprite.RenderPosition + new Vector2(0f, -9f * scale.Y) + hairOffset;
+        Vector2 hairPosition = sprite.RenderPosition + new Vector2(0f, -9f * scale.Y * sprite.Scale.Y) + hairOffset;
 
         foreach (Braid braid in braids)
         {
-            braid.Scale = scale.Sign();
+            braid.Scale = scale;
             braid.Simulate(hairPosition, motion);
         }
     }
