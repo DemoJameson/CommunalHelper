@@ -14,12 +14,11 @@ public class ConfigureDreamTunnelDashTrigger : Trigger
         options = new DreamTunnelDashConfiguration()
         {
             allowRedirect = data.Bool("allowRedirect", false),
-            allowSameDirRedirect = data.Bool("allowSameDirRedirect", false),
+            allowSameDirectionRedirect = data.Bool("allowSameDirectionRedirect", false),
             sameDirectionSpeedMultiplier = data.Float("sameDirectionSpeedMultiplier", 1f),
-            useEntryDir = data.Bool("useEntryDir", false),
+            useEntryDirection = data.Bool("useEntryDirection", false),
             speedConfiguration = (SpeedConfiguration) data.Int("speedConfiguration", 0),
             customSpeed = data.Float("customSpeed", 0f),
-            allowDashCancels = data.Bool("allowDashCancels", false),
         };
     }
 

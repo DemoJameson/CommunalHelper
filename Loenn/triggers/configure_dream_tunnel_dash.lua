@@ -2,15 +2,14 @@ return {
     name = "CommunalHelper/ConfigureDreamTunnelDashTrigger",
     placements = {
         {
-            name = "configureDreamTunnelDash",
+            name = "trigger",
             data = {
                 allowRedirect = false,
-                allowSameDirRedirect = false,
+                allowSameDirectionRedirect = false,
                 sameDirectionSpeedMultiplier = 1,
-                useEntryDir = false,
+                useEntryDirection = false,
                 speedConfiguration = 0,
                 customSpeed = 0,
-                allowDashCancels = false,
             }
         }
     },

@@ -66,23 +66,21 @@ public static class DreamTunnelDash
     public struct DreamTunnelDashConfiguration
     {
         public bool allowRedirect;
-        public bool allowSameDirRedirect;
+        public bool allowSameDirectionRedirect;
         public float sameDirectionSpeedMultiplier;
-        public bool useEntryDir;
+        public bool useEntryDirection;
         public SpeedConfiguration speedConfiguration;
         public float customSpeed;
-        public bool allowDashCancels;
     }
 
     public static readonly DreamTunnelDashConfiguration DefaultDreamTunnelDashConfiguration = new()
     {
         allowRedirect = false,
-        allowSameDirRedirect = false,
+        allowSameDirectionRedirect = false,
         sameDirectionSpeedMultiplier = 1,
-        useEntryDir = false,
+        useEntryDirection = false,
         speedConfiguration = SpeedConfiguration.Default,
         customSpeed = 0,
-        allowDashCancels = false,
     };
 
 
@@ -649,7 +647,7 @@ public static class DreamTunnelDash
             player.Ducking = false;
 
         float playerSpeed = player.Speed.Length();
-        Vector2 entryDir = (config.useEntryDir && playerSpeed > Player_DashSpeed) ? player.Speed.SafeNormalize() : player.DashDir;
+        Vector2 entryDir = (config.useEntryDirection && playerSpeed > Player_DashSpeed) ? player.Speed.SafeNormalize() : player.DashDir;
         float entrySpeed = config.speedConfiguration switch
         {
             SpeedConfiguration.Default => Player_DashSpeed,
@@ -720,7 +718,7 @@ public static class DreamTunnelDash
         if (DreamTunnelDashCount > 0)
         {
             bool flag = Input.GetAimVector() == player.DashDir;
-            if ((config.allowRedirect && !flag) || (config.allowSameDirRedirect && flag))
+            if ((config.allowRedirect && !flag) || (config.allowSameDirectionRedirect && flag))
             {
                 DreamTunnelDashCount = Math.Max(0, DreamTunnelDashCount - 1);
                 Audio.Play("event:/char/madeline/dreamblock_enter");
