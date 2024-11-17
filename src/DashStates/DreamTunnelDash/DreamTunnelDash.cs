@@ -3,7 +3,6 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 
