@@ -3,6 +3,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 
@@ -53,6 +54,39 @@ public static class DreamTunnelDash
     private static IDetour hook_Player_DashCoroutine;
     private static IDetour hook_Player_orig_Update;
     private static IDetour hook_Player_orig_UpdateSprite;
+
+
+    public enum SpeedConfiguration
+    {
+        Default,
+        NeverSlowDown,
+        UseCustomSpeed,
+    }
+
+    public struct DreamTunnelDashConfiguration
+    {
+        public bool allowRedirect;
+        public bool allowSameDirRedirect;
+        public float sameDirectionSpeedMultiplier;
+        public bool useEntryDir;
+        public SpeedConfiguration speedConfiguration;
+        public float customSpeed;
+        public bool allowDashCancels;
+    }
+
+    public static readonly DreamTunnelDashConfiguration DefaultDreamTunnelDashConfig = new()
+    {
+        allowRedirect = false,
+        allowSameDirRedirect = false,
+        sameDirectionSpeedMultiplier = 1,
+        useEntryDir = false,
+        speedConfiguration = SpeedConfiguration.Default,
+        customSpeed = 0,
+        allowDashCancels = false,
+    };
+
+    public static DreamTunnelDashConfiguration DreamTunnelDashConfig = DefaultDreamTunnelDashConfig;
+
 
     public static void Load()
     {
@@ -393,6 +427,7 @@ public static class DreamTunnelDash
     {
         DreamTunnelDashCount = 0;
         dreamTunnelDashAttacking = false;
+        DreamTunnelDashConfig = DefaultDreamTunnelDashConfig;
         orig(self);
     }
 
@@ -400,6 +435,7 @@ public static class DreamTunnelDash
     {
         DreamTunnelDashCount = 0;
         dreamTunnelDashAttacking = false;
+        DreamTunnelDashConfig = DefaultDreamTunnelDashConfig;
         orig(self);
     }
 
@@ -615,7 +651,13 @@ public static class DreamTunnelDash
         if (player.DashDir.Y > 0)
             player.Ducking = false;
 
-        player.Speed = player.DashDir * Player_DashSpeed;
+        player.Speed = (DreamTunnelDashConfig.useEntryDir ? player.Speed.SafeNormalize() : player.DashDir) * DreamTunnelDashConfig.speedConfiguration switch
+        {
+            SpeedConfiguration.Default => Player_DashSpeed,
+            SpeedConfiguration.NeverSlowDown => Math.Max(player.Speed.Length(), Player_DashSpeed),
+            SpeedConfiguration.UseCustomSpeed => DreamTunnelDashConfig.customSpeed,
+            _ => 0,
+        };
         player.TreatNaive = true;
         player.Depth = Depths.PlayerDreamDashing;
         playerData.Set(Player_dreamTunnelDashCanEndTimer, 0.1f);
@@ -670,9 +712,42 @@ public static class DreamTunnelDash
         Input.Rumble(RumbleStrength.Medium, RumbleLength.Short);
     }
 
+    private static void DreamTunnelDashRedirect(this Player player)
+    {
+        if (DreamTunnelDashCount > 0)
+        {
+            bool flag = Input.GetAimVector() == player.DashDir;
+            if ((DreamTunnelDashConfig.allowRedirect && !flag) || (DreamTunnelDashConfig.allowSameDirRedirect && flag))
+            {
+                DreamTunnelDashCount = Math.Max(0, DreamTunnelDashCount - 1);
+                Audio.Play("event:/char/madeline/dreamblock_enter");
+                if (Engine.TimeRate > 0.25f)
+                {
+                    Celeste.Freeze(0.05f);
+                }
+                if (flag)
+                {
+                    player.Speed *= DreamTunnelDashConfig.sameDirectionSpeedMultiplier;
+                    player.DashDir *= Math.Sign(DreamTunnelDashConfig.sameDirectionSpeedMultiplier);
+                }
+                else
+                {
+                    player.DashDir = Input.GetAimVector();
+                    player.Speed = player.DashDir * player.Speed.Length();
+                }
+                Input.Dash.ConsumeBuffer();
+            }
+        }
+    }
+
     private static int DreamTunnelDashUpdate(this Player player)
     {
         DynamicData playerData = player.GetData();
+
+        if (Input.Dash.Pressed && Input.Aim.Value != Vector2.Zero)
+        {
+            player.DreamTunnelDashRedirect();
+        }
 
         if (FeatherMode)
         {

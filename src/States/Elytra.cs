@@ -56,6 +56,11 @@ public static class Elytra
         public bool disableElytraReverseVerticalMomentum;
     }
 
+    public static readonly ElytraConfiguration DefaultElytraConfiguration = new()
+    {
+        disableElytraReverseVerticalMomentum = false,
+    };
+
     /// <summary>
     /// Refills the player's dashes and stamina.
     /// Because the player can deploy its elytra with at least one dashes, refilling dashes is like refilling elytra.
@@ -385,6 +390,7 @@ public static class Elytra
         data.Set(f_Player_elytraRefillSound, false);
         data.Set(f_Player_elytraIsInfinite, false);
         data.Set(f_Player_elytraCooldown, 0.0f);
+        data.Set(f_Player_elytraConfiguration, DefaultElytraConfiguration);
     }
 
     private static void Mod_Player_OnCollideH(On.Celeste.Player.orig_OnCollideH orig, Player self, CollisionData data)
