@@ -20,7 +20,6 @@ public static class Elytra
     private const string f_Player_elytraRefillSound = nameof(f_Player_elytraRefillSound); // bool
     private const string f_Player_elytraIsInfinite = nameof(f_Player_elytraIsInfinite); // bool
     private const string f_Player_elytraCooldown = nameof(f_Player_elytraCooldown); // float
-    private const string f_Player_elytraConfiguration = nameof(f_Player_elytraConfiguration); // ElytraConfiguration
 
     private const float STABLE_ANGLE = 0.2f;
     private const float ANGLE_RANGE = 2f;
@@ -75,9 +74,6 @@ public static class Elytra
     public static void SetInfiniteElytra(this Player player, bool enabled)
         => DynamicData.For(player).Set(f_Player_elytraIsInfinite, enabled);
 
-    public static void SetElytraConfiguration(this Player player, ElytraConfiguration config)
-        => DynamicData.For(player).Set(f_Player_elytraConfiguration, config);
-
     private static void PlayElytraRefillSound(this Player player)
     {
         DynamicData data = DynamicData.For(player);
@@ -100,7 +96,7 @@ public static class Elytra
         Facings facing = player.Facing;
         data.Set(f_Player_elytraGlideFacing, facing);
 
-        ElytraConfiguration config = data.Get<ElytraConfiguration>(f_Player_elytraConfiguration);
+        ElytraConfiguration config = CommunalHelperModule.Session.CurrentElytraConfiguration;
         Vector2 speed;
         if (config.disableElytraReverseVerticalMomentum)
         {
@@ -390,7 +386,6 @@ public static class Elytra
         data.Set(f_Player_elytraRefillSound, false);
         data.Set(f_Player_elytraIsInfinite, false);
         data.Set(f_Player_elytraCooldown, 0.0f);
-        data.Set(f_Player_elytraConfiguration, DefaultElytraConfiguration);
     }
 
     private static void Mod_Player_OnCollideH(On.Celeste.Player.orig_OnCollideH orig, Player self, CollisionData data)

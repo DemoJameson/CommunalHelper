@@ -25,7 +25,7 @@ public class ConfigureElytraTrigger : Trigger
     public override void OnEnter(Player player)
     {
         CommunalHelperModule.Session.CanDeployElytra = allow;
+        CommunalHelperModule.Session.CurrentElytraConfiguration = options;
         player.SetInfiniteElytra(infinite);
-        player.SetElytraConfiguration(options);
     }
 }

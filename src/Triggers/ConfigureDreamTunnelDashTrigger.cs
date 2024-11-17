@@ -25,6 +25,6 @@ public class ConfigureDreamTunnelDashTrigger : Trigger
 
     public override void OnEnter(Player player)
     {
-        DreamTunnelDashConfig = options;
+        CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration = options;
     }
 }

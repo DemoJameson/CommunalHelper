@@ -74,7 +74,7 @@ public static class DreamTunnelDash
         public bool allowDashCancels;
     }
 
-    public static readonly DreamTunnelDashConfiguration DefaultDreamTunnelDashConfig = new()
+    public static readonly DreamTunnelDashConfiguration DefaultDreamTunnelDashConfiguration = new()
     {
         allowRedirect = false,
         allowSameDirRedirect = false,
@@ -84,8 +84,6 @@ public static class DreamTunnelDash
         customSpeed = 0,
         allowDashCancels = false,
     };
-
-    public static DreamTunnelDashConfiguration DreamTunnelDashConfig = DefaultDreamTunnelDashConfig;
 
 
     public static void Load()
@@ -427,7 +425,6 @@ public static class DreamTunnelDash
     {
         DreamTunnelDashCount = 0;
         dreamTunnelDashAttacking = false;
-        DreamTunnelDashConfig = DefaultDreamTunnelDashConfig;
         orig(self);
     }
 
@@ -435,7 +432,6 @@ public static class DreamTunnelDash
     {
         DreamTunnelDashCount = 0;
         dreamTunnelDashAttacking = false;
-        DreamTunnelDashConfig = DefaultDreamTunnelDashConfig;
         orig(self);
     }
 
@@ -629,6 +625,7 @@ public static class DreamTunnelDash
     private static void DreamTunnelDashBegin(this Player player)
     {
         DynamicData playerData = player.GetData();
+        DreamTunnelDashConfiguration config = CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration;
 
         p_Player_StartedDashing.SetValue(player, false);
 
@@ -651,13 +648,17 @@ public static class DreamTunnelDash
         if (player.DashDir.Y > 0)
             player.Ducking = false;
 
-        player.Speed = (DreamTunnelDashConfig.useEntryDir ? player.Speed.SafeNormalize() : player.DashDir) * DreamTunnelDashConfig.speedConfiguration switch
+        float playerSpeed = player.Speed.Length();
+        Vector2 entryDir = (config.useEntryDir && playerSpeed > Player_DashSpeed) ? player.Speed.SafeNormalize() : player.DashDir;
+        float entrySpeed = config.speedConfiguration switch
         {
             SpeedConfiguration.Default => Player_DashSpeed,
-            SpeedConfiguration.NeverSlowDown => Math.Max(player.Speed.Length(), Player_DashSpeed),
-            SpeedConfiguration.UseCustomSpeed => DreamTunnelDashConfig.customSpeed,
+            SpeedConfiguration.NeverSlowDown => Math.Max(playerSpeed, Player_DashSpeed),
+            SpeedConfiguration.UseCustomSpeed => config.customSpeed,
             _ => 0,
         };
+
+        player.Speed = entryDir * entrySpeed;
         player.TreatNaive = true;
         player.Depth = Depths.PlayerDreamDashing;
         playerData.Set(Player_dreamTunnelDashCanEndTimer, 0.1f);
@@ -714,10 +715,12 @@ public static class DreamTunnelDash
 
     private static void DreamTunnelDashRedirect(this Player player)
     {
+        DreamTunnelDashConfiguration config = CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration;
+
         if (DreamTunnelDashCount > 0)
         {
             bool flag = Input.GetAimVector() == player.DashDir;
-            if ((DreamTunnelDashConfig.allowRedirect && !flag) || (DreamTunnelDashConfig.allowSameDirRedirect && flag))
+            if ((config.allowRedirect && !flag) || (config.allowSameDirRedirect && flag))
             {
                 DreamTunnelDashCount = Math.Max(0, DreamTunnelDashCount - 1);
                 Audio.Play("event:/char/madeline/dreamblock_enter");
@@ -727,8 +730,8 @@ public static class DreamTunnelDash
                 }
                 if (flag)
                 {
-                    player.Speed *= DreamTunnelDashConfig.sameDirectionSpeedMultiplier;
-                    player.DashDir *= Math.Sign(DreamTunnelDashConfig.sameDirectionSpeedMultiplier);
+                    player.Speed *= config.sameDirectionSpeedMultiplier;
+                    player.DashDir *= Math.Sign(config.sameDirectionSpeedMultiplier);
                 }
                 else
                 {
