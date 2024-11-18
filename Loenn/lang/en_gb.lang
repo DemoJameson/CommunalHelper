@@ -214,6 +214,7 @@ entities.CommunalHelper/ManualCassetteController.attributes.description.startInd
 entities.CommunalHelper/UnderwaterMusicController.placements.name.controller=Underwater Music Controller
 entities.CommunalHelper/UnderwaterMusicController.attributes.description.enable=Whether to always enable or always disable underwater sound modifiers.
 entities.CommunalHelper/UnderwaterMusicController.attributes.description.dashSFX=Whether to also affect the additional in-water dash sound effect.
+entities.CommunalHelper/UnderwaterMusicController.attributes.description.flag=Specifies which flag has to be enabled for this controller to have an effect. Leave empty for this controller to have an effect all the time. 
 
 # Timed Trigger Spikes
 entities.CommunalHelper/TimedTriggerSpikesUp.placements.name.up_default=Timed Trigger Spikes (Up, Default)
