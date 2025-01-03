@@ -33,6 +33,7 @@ public static class DreamTunnelDash
         get => CommunalHelperModule.Settings.AlwaysActiveDreamRefillCharge ? 1 : dreamTunnelDashCount;
         set => dreamTunnelDashCount = value;
     }
+    private static bool canStartDreamTunnelDashAttack;
     private static bool dreamTunnelDashAttacking;
     private static float dreamTunnelDashTimer;
 
@@ -64,22 +65,24 @@ public static class DreamTunnelDash
 
     public struct DreamTunnelDashConfiguration
     {
-        public bool allowRedirect;
-        public bool allowSameDirectionRedirect;
-        public float sameDirectionSpeedMultiplier;
-        public bool useEntryDirection;
-        public SpeedConfiguration speedConfiguration;
-        public float customSpeed;
+        public bool AllowRedirect;
+        public bool AllowSameDirectionRedirect;
+        public float SameDirectionSpeedMultiplier;
+        public bool UseEntryDirection;
+        public SpeedConfiguration SpeedConfiguration;
+        public float CustomSpeed;
+        public bool AllowDashCancel;
     }
 
     public static readonly DreamTunnelDashConfiguration DefaultDreamTunnelDashConfiguration = new()
     {
-        allowRedirect = false,
-        allowSameDirectionRedirect = false,
-        sameDirectionSpeedMultiplier = 1,
-        useEntryDirection = false,
-        speedConfiguration = SpeedConfiguration.Default,
-        customSpeed = 0,
+        AllowRedirect = false,
+        AllowSameDirectionRedirect = false,
+        SameDirectionSpeedMultiplier = 1,
+        UseEntryDirection = false,
+        SpeedConfiguration = SpeedConfiguration.Default,
+        CustomSpeed = 0,
+        AllowDashCancel = false,
     };
 
 
@@ -177,27 +180,34 @@ public static class DreamTunnelDash
         Extensions.RegisterState(StDreamTunnelDash, "StDreamTunnelDash");
     }
 
-    private static void Player_DashBegin(On.Celeste.Player.orig_DashBegin orig, Player self)
+    private static void StartDreamTunnelDashAttacking(Player player)
     {
-        orig(self);
-
-        if (DreamTunnelDashCount > 0)
+        if (canStartDreamTunnelDashAttack)
         {
-
             dreamTunnelDashAttacking = true;
-            dreamTunnelDashTimer = self.GetData().Get<float>("dashAttackTimer");
+            dreamTunnelDashTimer = player.GetData().Get<float>("dashAttackTimer");
 
             // Ensures the player enters the dream tunnel dash state if dashing into a fast moving block
             // Because of how it works, it removes dashdir leniency :(
-            DynamicData playerData = self.GetData();
-            Vector2 lastAim = Input.GetAimVector(self.Facing);
+            DynamicData playerData = player.GetData();
+            Vector2 lastAim = Input.GetAimVector(player.Facing);
             Vector2 dir = lastAim.Sign();
-            if (!self.CollideCheck<Solid, DreamBlock>() && self.CollideCheck<Solid, DreamBlock>(self.Position + dir))
+            if (!player.CollideCheck<Solid, DreamBlock>() && player.CollideCheck<Solid, DreamBlock>(player.Position + dir))
             {
-                self.Speed = self.DashDir = lastAim;
-                self.MoveHExact((int) dir.X, playerData.Get<Collision>("onCollideH"));
-                self.MoveVExact((int) dir.Y, playerData.Get<Collision>("onCollideV"));
+                player.Speed = player.DashDir = lastAim;
+                player.MoveHExact((int) dir.X, playerData.Get<Collision>("onCollideH"));
+                player.MoveVExact((int) dir.Y, playerData.Get<Collision>("onCollideV"));
             }
+
+            canStartDreamTunnelDashAttack = false;
+        }
+    }
+
+    private static void UseDreamTunnelDash()
+    {
+        if (DreamTunnelDashCount > 0)
+        {
+            canStartDreamTunnelDashAttack = true;
 
             if (NextDashFeather)
             {
@@ -206,6 +216,15 @@ public static class DreamTunnelDash
             }
             DreamTunnelDashCount--;
         }
+    }
+
+    private static void Player_DashBegin(On.Celeste.Player.orig_DashBegin orig, Player self)
+    {
+        orig(self);
+
+        UseDreamTunnelDash();
+        if (!CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration.AllowDashCancel)
+            StartDreamTunnelDashAttacking(self);
     }
 
     // DreamTunnelDash trail recoloring
@@ -223,12 +242,26 @@ public static class DreamTunnelDash
 
     private static void Player_DashCoroutine(ILContext il)
     {
+        ILCursor cursor = new(il);
+
+        /*
+         * start the player dream tunnel dash later if needed to allow cancelling the dream tunnel dash
+         * this replicates vanilla behavior of being able to instant hyper for example on dream blocks
+         * inserts a call to StartDreamTunnelDashAttacking after the yield return null; if the current dream dash config allows dash cancels
+         */
+        ILLabel afterStartDashAttack = cursor.DefineLabel();
+        cursor.GotoNext(MoveType.Before, instr => instr.MatchLdsfld<SaveData>("Instance"));
+        cursor.EmitDelegate(() => CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration.AllowDashCancel);
+        cursor.Emit(OpCodes.Brfalse, afterStartDashAttack);
+        cursor.Emit(OpCodes.Ldloc_1);
+        cursor.EmitDelegate(StartDreamTunnelDashAttacking);
+        cursor.MarkLabel(afterStartDashAttack);
+
         /*
          * adds a check for !dreamTunnelDashAttacking to
          * if (player.onGround && player.DashDir.X != 0f && player.DashDir.Y > 0f && player.Speed.Y > 0f && 
          *  (!player.Inventory.DreamDash || !player.CollideCheck<DreamBlock>(player.Position + Vector2.UnitY)))
          */
-        ILCursor cursor = new(il);
         cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Player>("onGround"));
         cursor.Emit(cursor.Next.OpCode, cursor.Next.Operand);
         cursor.Emit(OpCodes.Ldsfld, typeof(DreamTunnelDash).GetField(nameof(dreamTunnelDashAttacking), BindingFlags.NonPublic | BindingFlags.Static));
@@ -646,12 +679,12 @@ public static class DreamTunnelDash
             player.Ducking = false;
 
         float playerSpeed = player.Speed.Length();
-        Vector2 entryDir = (config.useEntryDirection && playerSpeed > Player_DashSpeed) ? player.Speed.SafeNormalize() : player.DashDir;
-        float entrySpeed = config.speedConfiguration switch
+        Vector2 entryDir = (config.UseEntryDirection && playerSpeed > Player_DashSpeed) ? player.Speed.SafeNormalize() : player.DashDir;
+        float entrySpeed = config.SpeedConfiguration switch
         {
             SpeedConfiguration.Default => Player_DashSpeed,
             SpeedConfiguration.NeverSlowDown => Math.Max(playerSpeed, Player_DashSpeed),
-            SpeedConfiguration.UseCustomSpeed => config.customSpeed,
+            SpeedConfiguration.UseCustomSpeed => config.CustomSpeed,
             _ => 0,
         };
 
@@ -717,7 +750,7 @@ public static class DreamTunnelDash
         if (DreamTunnelDashCount > 0)
         {
             bool flag = Input.GetAimVector() == player.DashDir;
-            if ((config.allowRedirect && !flag) || (config.allowSameDirectionRedirect && flag))
+            if ((config.AllowRedirect && !flag) || (config.AllowSameDirectionRedirect && flag))
             {
                 DreamTunnelDashCount = Math.Max(0, DreamTunnelDashCount - 1);
                 Audio.Play("event:/char/madeline/dreamblock_enter");
@@ -727,8 +760,8 @@ public static class DreamTunnelDash
                 }
                 if (flag)
                 {
-                    player.Speed *= config.sameDirectionSpeedMultiplier;
-                    player.DashDir *= Math.Sign(config.sameDirectionSpeedMultiplier);
+                    player.Speed *= config.SameDirectionSpeedMultiplier;
+                    player.DashDir *= Math.Sign(config.SameDirectionSpeedMultiplier);
                 }
                 else
                 {

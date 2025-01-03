@@ -10,6 +10,7 @@ return {
                 useEntryDirection = false,
                 speedConfiguration = 0,
                 customSpeed = 0,
+                allowDashCancel = false,
             }
         }
     },
