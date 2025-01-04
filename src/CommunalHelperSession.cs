@@ -1,8 +1,8 @@
-﻿using Celeste.Mod.CommunalHelper.DashStates;
-using Celeste.Mod.CommunalHelper.Entities;
+﻿using Celeste.Mod.CommunalHelper.Entities;
 using Celeste.Mod.CommunalHelper.States;
 using System.Collections.Generic;
 using static Celeste.Mod.CommunalHelper.Entities.StationBlockTrack;
+using static Celeste.Mod.CommunalHelper.DashStates.DreamTunnelDash;
 
 namespace Celeste.Mod.CommunalHelper;
 
@@ -27,7 +27,7 @@ public class CommunalHelperSession : EverestModuleSession
     public bool CanDeployElytra { get; set; }
     public Elytra.ElytraConfiguration CurrentElytraConfiguration { get; set; } = Elytra.DefaultElytraConfiguration;
 
-    public DreamTunnelDash.DreamTunnelDashConfiguration CurrentDreamTunnelDashConfiguration { get; set; } = DreamTunnelDash.DefaultDreamTunnelDashConfiguration;
+    public DreamTunnelDashConfiguration CurrentDreamTunnelDashConfiguration { get; set; } = DefaultDreamTunnelDashConfiguration;
 
     internal float PrevGasTimer { get; set; }
     public float GasTimer { get; set; }
