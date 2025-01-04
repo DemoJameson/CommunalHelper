@@ -1,4 +1,4 @@
-﻿using Celeste.Mod.CommunalHelper.Components;
+using Celeste.Mod.CommunalHelper.Components;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -245,7 +245,7 @@ public static class DreamTunnelDash
         ILCursor cursor = new(il);
 
         /*
-         * start the player dream tunnel dash later if needed to allow cancelling the dream tunnel dash
+         * start the player dream tunnel dash later if needed to allow cancelling it
          * this replicates vanilla behavior of being able to instant hyper for example on dream blocks
          * inserts a call to StartDreamTunnelDashAttacking after the yield return null; if the current dream dash config allows dash cancels
          */
