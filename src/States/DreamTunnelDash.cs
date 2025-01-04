@@ -33,11 +33,11 @@ public static class DreamTunnelDash
             player.Ducking = false;
 
         float playerSpeed = player.Speed.Length();
-        Vector2 entryDir = (config.UseEntryDirection && playerSpeed > Player_DashSpeed) ? player.Speed.SafeNormalize() : player.DashDir;
+        Vector2 entryDir = (config.UseEntryDirection && playerSpeed > Player.DashSpeed) ? player.Speed.SafeNormalize() : player.DashDir;
         float entrySpeed = config.SpeedConfiguration switch
         {
-            SpeedConfiguration.Default => Player_DashSpeed,
-            SpeedConfiguration.NeverSlowDown => Math.Max(playerSpeed, Player_DashSpeed),
+            SpeedConfiguration.Default => Player.DashSpeed,
+            SpeedConfiguration.NeverSlowDown => Math.Max(playerSpeed, Player.DashSpeed),
             SpeedConfiguration.UseCustomSpeed => config.CustomSpeed,
             _ => 0,
         };
@@ -130,6 +130,7 @@ public static class DreamTunnelDash
     public static int DreamTunnelDashUpdate(this Player player)
     {
         DynamicData playerData = player.GetData();
+        DreamTunnelDashConfiguration config = CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration;
 
         if (Input.Dash.Pressed && Input.Aim.Value != Vector2.Zero)
         {
@@ -147,7 +148,13 @@ public static class DreamTunnelDash
                     vector = Vector2.Dot(input, vector) != -0.8f ? vector.RotateTowards(input.Angle(), 5f * Engine.DeltaTime) : vector;
                     vector = vector.CorrectJoystickPrecision();
                     player.DashDir = vector;
-                    player.Speed = vector * 240f;
+                    player.Speed = vector * config.SpeedConfiguration switch
+                    {
+                        SpeedConfiguration.Default => Player.DashSpeed,
+                        SpeedConfiguration.NeverSlowDown => Math.Max(player.Speed.Length(), Player.DashSpeed),
+                        SpeedConfiguration.UseCustomSpeed => config.CustomSpeed,
+                        _ => 0,
+                    };
                 }
             }
         }
