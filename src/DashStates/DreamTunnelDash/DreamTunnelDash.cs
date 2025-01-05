@@ -33,7 +33,7 @@ public static class DreamTunnelDash
         get => CommunalHelperModule.Settings.AlwaysActiveDreamRefillCharge ? 1 : dreamTunnelDashCount;
         set => dreamTunnelDashCount = value;
     }
-    private static bool canStartDreamTunnelDashAttack;
+    private static bool canStartDreamTunnelDashAttack = false;
     private static bool dreamTunnelDashAttacking;
     private static float dreamTunnelDashTimer;
 
@@ -169,6 +169,7 @@ public static class DreamTunnelDash
     private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player player, Vector2 position, PlayerSpriteMode spriteMode)
     {
         orig(player, position, spriteMode);
+        canStartDreamTunnelDashAttack = false;
         dreamTunnelDashAttacking = false;
     }
 
@@ -239,10 +240,11 @@ public static class DreamTunnelDash
         /*
          * start the player dream tunnel dash later if needed to allow cancelling it
          * this replicates vanilla behavior of being able to instant hyper for example on dream blocks
-         * inserts a call to StartDreamTunnelDashAttacking after the yield return null; if the current dream dash config allows dash cancels
+         * inserts a call to StartDreamTunnelDashAttacking after the call to CallDashEvents if the current dream dash config allows dash cancels
+         * is this the best place to put this logic?
          */
         ILLabel afterStartDashAttack = cursor.DefineLabel();
-        cursor.GotoNext(MoveType.Before, instr => instr.MatchLdsfld<SaveData>("Instance"));
+        cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("CallDashEvents"));
         cursor.EmitDelegate(() => CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration.AllowDashCancel);
         cursor.Emit(OpCodes.Brfalse, afterStartDashAttack);
         cursor.Emit(OpCodes.Ldloc_1);
