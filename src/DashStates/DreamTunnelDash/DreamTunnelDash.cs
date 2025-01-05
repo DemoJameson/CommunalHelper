@@ -191,9 +191,9 @@ public static class DreamTunnelDash
                 player.MoveHExact((int) dir.X, playerData.Get<Collision>("onCollideH"));
                 player.MoveVExact((int) dir.Y, playerData.Get<Collision>("onCollideV"));
             }
-
-            canStartDreamTunnelDashAttack = false;
         }
+
+        canStartDreamTunnelDashAttack = false;
     }
 
     private static void UseDreamTunnelDash()
