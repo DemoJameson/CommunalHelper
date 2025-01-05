@@ -18,7 +18,7 @@ public class ConfigureDreamTunnelDashTrigger : Trigger
             UseEntryDirection = data.Bool("useEntryDirection", false),
             SpeedConfiguration = (SpeedConfiguration) data.Int("speedConfiguration", 0),
             CustomSpeed = data.Float("customSpeed", 0f),
-            AllowDashCancel = data.Bool("allowDashCancel", false),
+            AllowDashCancels = data.Bool("allowDashCancels", false),
         };
     }
 

@@ -71,7 +71,7 @@ public static class DreamTunnelDash
         public bool UseEntryDirection;
         public SpeedConfiguration SpeedConfiguration;
         public float CustomSpeed;
-        public bool AllowDashCancel;
+        public bool AllowDashCancels;
     }
 
     public static readonly DreamTunnelDashConfiguration DefaultDreamTunnelDashConfiguration = new()
@@ -82,7 +82,7 @@ public static class DreamTunnelDash
         UseEntryDirection = false,
         SpeedConfiguration = SpeedConfiguration.Default,
         CustomSpeed = 0,
-        AllowDashCancel = false,
+        AllowDashCancels = false,
     };
 
 
@@ -216,7 +216,7 @@ public static class DreamTunnelDash
         orig(self);
 
         UseDreamTunnelDash();
-        if (!CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration.AllowDashCancel)
+        if (!CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration.AllowDashCancels)
             StartDreamTunnelDashAttacking(self);
     }
 
@@ -245,7 +245,7 @@ public static class DreamTunnelDash
          */
         ILLabel afterStartDashAttack = cursor.DefineLabel();
         cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("CallDashEvents"));
-        cursor.EmitDelegate(() => CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration.AllowDashCancel);
+        cursor.EmitDelegate(() => CommunalHelperModule.Session.CurrentDreamTunnelDashConfiguration.AllowDashCancels);
         cursor.Emit(OpCodes.Brfalse, afterStartDashAttack);
         cursor.Emit(OpCodes.Ldloc_1);
         cursor.EmitDelegate(StartDreamTunnelDashAttacking);
