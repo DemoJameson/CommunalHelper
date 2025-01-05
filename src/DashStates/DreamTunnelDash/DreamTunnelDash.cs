@@ -209,6 +209,10 @@ public static class DreamTunnelDash
             }
             DreamTunnelDashCount--;
         }
+        else
+        {
+            canStartDreamTunnelDashAttack = false;
+        }
     }
 
     private static void Player_DashBegin(On.Celeste.Player.orig_DashBegin orig, Player self)
