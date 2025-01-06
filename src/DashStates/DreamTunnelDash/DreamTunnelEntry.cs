@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using Celeste.Mod.CommunalHelper.States;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -12,7 +13,7 @@ using static Celeste.Mod.CommunalHelper.DashStates.DreamTunnelDash;
 * Slow routine: Particles spray out from each end diagonally, moving inwards
 * Fast routine: Particles spray outwards + diagonally from the ends
 * Try to keep the timing on these the same as for DreamBlocks
-* 
+*
 * Todo:
 * Add Feather particles/functionality
 * Add Dreamblock activate/deactivate routines
@@ -72,6 +73,8 @@ public class DreamTunnelEntry : AbstractPanel
     private readonly MTexture[] particleTextures;
 
     private readonly int originalDepth = Depths.FakeWalls;
+
+    private DreamBlockDummy dummy;
 
     public DreamTunnelEntry(Vector2 position, float size, Spikes.Directions orientation, bool overrideAllowStaticMovers, int depth)
         : base(position, size, orientation, overrideAllowStaticMovers)
@@ -219,7 +222,7 @@ public class DreamTunnelEntry : AbstractPanel
 
         if (changeState)
         {
-            player.StateMachine.State = StDreamTunnelDash;
+            player.StateMachine.State = St.DreamTunnelDash;
         }
 
         return true;
@@ -240,7 +243,7 @@ public class DreamTunnelEntry : AbstractPanel
         base.Added(scene);
         PlayerHasDreamDash = level.Session.Inventory.DreamDash;
 
-        scene.Add(new DreamBlockDummy(this)
+        scene.Add(dummy = new DreamBlockDummy(this)
         {
             OnActivate = Activate,
             OnFastActivate = FastActivate,
@@ -294,6 +297,8 @@ public class DreamTunnelEntry : AbstractPanel
         base.Removed(scene);
 
         scene.Tracker.GetEntity<DreamTunnelEntryRenderer>().Untrack(this, originalDepth);
+
+        dummy.RemoveSelf();
     }
 
     public void FootstepRipple(Vector2 position)
@@ -507,7 +512,7 @@ public class DreamTunnelEntry : AbstractPanel
     {
         /*
          * adds a check for !player.CollideCheck<DreamTunnelEntry>(player.Position + Vector2.UnitY) to
-         * if (player.onGround && player.DashDir.X != 0f && player.DashDir.Y > 0f && player.Speed.Y > 0f && 
+         * if (player.onGround && player.DashDir.X != 0f && player.DashDir.Y > 0f && player.Speed.Y > 0f &&
          *  (!player.Inventory.DreamDash || !player.CollideCheck<DreamBlock>(player.Position + Vector2.UnitY)))
          */
         ILCursor cursor = new(il);
