@@ -52,12 +52,12 @@ public static class Elytra
 
     public struct ElytraConfiguration
     {
-        public bool disableElytraReverseVerticalMomentum;
+        public bool disableReverseVerticalMomentum;
     }
 
     public static readonly ElytraConfiguration DefaultElytraConfiguration = new()
     {
-        disableElytraReverseVerticalMomentum = false,
+        disableReverseVerticalMomentum = false,
     };
 
     /// <summary>
@@ -98,7 +98,7 @@ public static class Elytra
 
         ElytraConfiguration config = CommunalHelperModule.Session.CurrentElytraConfiguration;
         Vector2 speed;
-        if (config.disableElytraReverseVerticalMomentum)
+        if (config.disableReverseVerticalMomentum)
         {
             speed = new(MathF.Abs(player.Speed.X), player.Speed.Y);
         }

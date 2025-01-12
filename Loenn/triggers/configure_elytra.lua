@@ -9,7 +9,7 @@ return {
             data = {
                 allow = true,
                 infinite = false,
-                disableElytraReverseVerticalMomentum = false,
+                disableReverseVerticalMomentum = false,
             }
         },
         {
@@ -17,7 +17,7 @@ return {
             data = {
                 allow = true,
                 infinite = true,
-                disableElytraReverseVerticalMomentum = false,
+                disableReverseVerticalMomentum = false,
             }
         },
         {
@@ -25,7 +25,7 @@ return {
             data = {
                 allow = false,
                 infinite = false,
-                disableElytraReverseVerticalMomentum = false,
+                disableReverseVerticalMomentum = false,
             }
         }
     }

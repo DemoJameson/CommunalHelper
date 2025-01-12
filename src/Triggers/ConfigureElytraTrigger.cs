@@ -18,7 +18,7 @@ public class ConfigureElytraTrigger : Trigger
 
         options = new ElytraConfiguration()
         {
-            disableElytraReverseVerticalMomentum = data.Bool("disableElytraReverseVerticalMomentum"),
+            disableReverseVerticalMomentum = data.Bool("disableReverseVerticalMomentum"),
         };
     }
 

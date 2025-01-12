@@ -995,7 +995,7 @@ triggers.CommunalHelper/ConfigureElytraTrigger.placements.name.yes_infinite=Enab
 triggers.CommunalHelper/ConfigureElytraTrigger.placements.name.no=Disable Elytra
 triggers.CommunalHelper/ConfigureElytraTrigger.attributes.description.allow=Whether the player can deploy its elytra after going through the trigger.\nThe elytra is deployed with a keybind configured in mod settings.\nDefault is W on keyboard, and Left Shoulder on controller.
 triggers.CommunalHelper/ConfigureElytraTrigger.attributes.description.infinite=If this trigger enables the elytra, this option will make it so that deploying the elytra does not consume a dash. Note that this can potentially be used to build infinite height (over long distances).
-triggers.CommunalHelper/ConfigureElytraTrigger.attributes.description.disableElytraReverseVerticalMomentum=Disables the vertical boost the player gets when deploying the elytra facing the opposite direction they are moving.
+triggers.CommunalHelper/ConfigureElytraTrigger.attributes.description.disableReverseVerticalMomentum=Disables the vertical boost the player gets when deploying the elytra facing the opposite direction they are moving.
 
 # Configure Dream Tunnel Dash Trigger
 triggers.CommunalHelper/ConfigureDreamTunnelDashTrigger.placements.name.trigger=Configure Dream Tunnel Dash
